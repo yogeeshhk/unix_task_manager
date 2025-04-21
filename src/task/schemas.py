@@ -1,17 +1,28 @@
+from datetime import datetime
+from typing import Optional
+
 from pydantic import BaseModel
 
+from src.task.constants import TaskStatus
 
-class TaskBase(BaseModel):
+
+class TaskCreate(BaseModel):
     name: str
-    status: str = "running"
 
 
-class TaskCreate(TaskBase):
-    pass
-
-
-class Task(TaskBase):
+class TaskResponse(BaseModel):
     id: int
+    name: str
+    status: TaskStatus
+    created_at: datetime
+    started_at: Optional[datetime]
+    ended_at: Optional[datetime]
+    parent_id: Optional[int] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+class PaginatedTaskResponse(BaseModel):
+    total: int
+    items: list[TaskResponse]

@@ -1,8 +1,8 @@
-"""initial migration
+"""initial schema
 
-Revision ID: 6d0eb789ce79
+Revision ID: 28e312d70f30
 Revises: 
-Create Date: 2025-04-21 20:44:32.847900
+Create Date: 2025-04-22 01:29:08.728731
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '6d0eb789ce79'
+revision: str = '28e312d70f30'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,8 +24,12 @@ def upgrade() -> None:
     op.create_table('tasks',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('status', sa.String(), nullable=True),
+    sa.Column('status', sa.Enum('RUNNING', 'COMPLETED', 'KILLED', name='taskstatus'), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('started_at', sa.DateTime(), nullable=True),
+    sa.Column('ended_at', sa.DateTime(), nullable=True),
+    sa.Column('parent_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['parent_id'], ['tasks.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_tasks_id'), 'tasks', ['id'], unique=False)

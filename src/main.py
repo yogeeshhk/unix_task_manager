@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 
-from src.task.router import router
+from src.task.router import router as task_router
 
 app = FastAPI(title="Unix-Inspired Task Manager")
 
-app.include_router(router, prefix="/tasks")
+app.include_router(task_router, prefix="/tasks")
 
 
 @app.get("/health")
