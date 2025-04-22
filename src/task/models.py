@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 
 from src.db.database import Base
 from src.task.constants import TaskStatus
+from src.auth.models import User
 
 
 class Task(Base):
@@ -21,3 +22,6 @@ class Task(Base):
 
     parent_id = Column(Integer, ForeignKey("tasks.id"), nullable=True)
     children = relationship("Task", remote_side=[id], backref="parent")
+
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    owner = relationship("User", backref="tasks")

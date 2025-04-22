@@ -1,94 +1,104 @@
-# Unix Task Manager
+# Unix Task Manager API
 
-A FastAPI-based task manager that mimics a simplified Linux process manager. Spawn (fork) tasks, kill them, filter them, sort them, and pretend you're doing something important.
+A FastAPI-based task management service inspired by Unix process concepts. Supports authentication, task lifecycle control, user ownership, logging, and more.
 
 ## Features
 
--  Create tasks (automatically start in `running` status)
--  Fork existing tasks (child inherits name and status)
--  Kill tasks (mark as `killed` and set `ended_at`)
--  Filter by `status`, `parent_id`, or `name`
--  Paginated and sortable task listing
--  Parent-child relationships with recursive grace
--  Full test coverage (kind of)
--  Custom exception handling
--  SQLAlchemy + Alembic + PostgreSQL
+- JWT-based Authentication (Login / Register)
+- Admin-restricted healthcheck endpoint
+- Task CRUD with:
+  - Filtering by status and parent
+  - Search by name
+  - Sorting (created, ended, name, status)
+  - Pagination
+- Task lifecycle management (e.g., `RUNNING`, `KILLED`)
+- Only task owners can view, fork, or delete their tasks
+- Centralized logging (~ last 20 API hits)
+- CLI tool to create admin user
+- Dockerized setup
 
-## Tech Stack
+## API Docs
 
-- **Python 3.11**
-- **FastAPI**
-- **SQLAlchemy**
-- **Alembic**
-- **PostgreSQL**
-- **Docker + Docker Compose**
-- **Pytest**
+Available at [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-## Setup
+## Quick Start
 
 ```bash
-# Clone the repo
 git clone https://github.com/yogeeshhk/unix_task_manager.git
-cd unix-task-manager
+cd unix_task_manager
+```
 
-# Create a .env file
-cp .env.example .env
+### Setup (Local)
 
-# add your database URL to the .env file
-# Example: DATABASE_URL=postgresql://postgres:postgres@db:5432/task_manager 
+```bash
+python -m venv venv
+source venv/bin/activate  # or .\venv\Scripts\activate on Windows
+pip install -r requirements.txt
+```
 
-# build and run the docker containers
+### Run the API
+
+```bash
+uvicorn src.main:app --reload
+```
+
+## Run with Docker
+
+```bash
 docker-compose up --build
 ```
 
+## Admin CLI
 
-### API Docs
+```bash
+python create_admin.py --username your_admin --password your_password
+```
 
-Available at: [http://localhost:8000/docs](http://localhost:8000/docs)
-
-##  Running Tests
+## Running Tests
 
 ```bash
 pytest tests/
 ```
 
-## Migrations
+## Healthcheck (Admin Only)
 
-```bash
-# Create new migration
-alembic revision --autogenerate -m "your message"
-
-# Apply migration
-alembic upgrade head
-```
-## Troubleshooting
-
-If PostgreSQL enum issues occur:
-
-```sql
-DROP TYPE IF EXISTS taskstatus;
+```http
+GET /healthcheck
+Authorization: Bearer <admin_token>
 ```
 
-Ensure the database schema aligns with updated models.
+Returns recent logs and timestamp.
 
+## Authentication
 
-## Example Task
+- `/auth/register` - Create a new user
+- `/auth/login` - Get JWT token
 
-```json
-{
-  "name": "Compile"
-}
+Use `Authorization: Bearer <token>` header for authenticated requests.
+
+---
+
+## Project Structure
+
+```
+src/
+│
+├── auth/             # Authentication module
+├── task/             # Task logic (CRUD, lifecycle)
+├── common/           # Shared utils (exceptions, logger)
+├── db/               # DB setup and models
+├── config.py         # Settings and environment
+├── main.py           # Entry point
+└── ...
 ```
 
-Response:
+## Extra Notes
+Some quick context on choices I made while putting this together:
 
-```json
-{
-  "id": 1,
-  "name": "Compile",
-  "status": "running",
-  "created_at": "...",
-  "started_at": "...",
-  "ended_at": null,
-  "parent_id": null
-}
+- FastAPI - Picked it because it is lightweight and has great async support. It’s also pretty easy to get up and running with.
+- JWT + Custom Exceptions - Instead of throwing HTTPException all over the place, I added a few custom ones to keep responses consistent along with a centralized exception handler - easier to handle in the client (and logs).
+- Service Layer - Moved logic out of the route functions and into separate service modules. Keeps the routes cleaner and helps a lot with testing and reuse.
+- Typer for CLI - Used Typer for the admin CLI tool, helps build simple command-line stuff quick.
+- Rotating Logger - Added rotating file logging for the API. Keeps the logs manageable and makes debugging a lot easier without having to tail a massive file. This can also be accessed by admin using Healthcheck endpoint.
+- Swagger Auth Cleanup - Replaced OAuth2PasswordRequestForm with a JSON-based login to avoid the extra fields Swagger adds by default. Simpler and easier to work with on the frontend too.
+- Docker Compose - Just a quick setup for local dev.
