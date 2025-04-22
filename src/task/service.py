@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from .constants import TaskStatus
 from .models import Task
-from .schemas import TaskCreate
+from .schemas import TaskCreate, PaginatedTaskResponse
 from ..auth.models import User
 from ..common.exceptions import (
     NotFoundException,
@@ -26,7 +26,7 @@ def get_tasks(
     offset: int = 0,
     sort_by: str = "created_at",
     order: str = "desc"
-) -> dict:
+) -> PaginatedTaskResponse:
     query = db.query(Task).filter(Task.user_id == current_user.id)
 
     if parent_id is not None:
@@ -50,7 +50,22 @@ def get_tasks(
     items = query.order_by(sort_direction).offset(offset).limit(limit).all()
 
     logger.info(f"Returning {len(items)} tasks out of {total}")
-    return {"total": total, "items": items}
+
+    current_page = (offset // limit) + 1
+    total_pages = (total + limit - 1) // limit
+
+    next_page = current_page + 1 if offset + limit < total else None
+    previous_page = current_page - 1 if current_page > 1 else None
+
+    return PaginatedTaskResponse(
+        total=total,
+        page=current_page,
+        page_size=limit,
+        total_pages=total_pages,
+        next_page=next_page,
+        previous_page=previous_page,
+        items=items
+    )
 
 
 def get_task(task_id: int, db: Session, current_user: User):

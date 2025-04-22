@@ -3,6 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from src.common.pagination import PaginatedResponse
 from src.task.constants import TaskStatus
 
 
@@ -23,6 +24,5 @@ class TaskResponse(BaseModel):
         from_attributes = True
 
 
-class PaginatedTaskResponse(BaseModel):
-    total: int
-    items: list[TaskResponse]
+class PaginatedTaskResponse(PaginatedResponse[TaskResponse]):
+    pass

@@ -11,7 +11,6 @@ A FastAPI-based task management service inspired by Unix process concepts. Suppo
   - Search by name
   - Sorting (created, ended, name, status)
   - Pagination
-- Task lifecycle management (e.g., `RUNNING`, `KILLED`)
 - Only task owners can view, fork, or delete their tasks
 - Centralized logging (~ last 20 API hits)
 - CLI tool to create admin user
@@ -42,16 +41,22 @@ pip install -r requirements.txt
 uvicorn src.main:app --reload
 ```
 
-## Run with Docker
+## Build Docker Image
 
 ```bash
-docker-compose up --build
+docker-compose build
+```
+
+## Run Docker Container
+
+```bash
+docker-compose up
 ```
 
 ## Admin CLI
 
 ```bash
-python create_admin.py --username your_admin --password your_password
+python create_admin.py create_admin --username your_admin --password your_password
 ```
 
 ## Running Tests

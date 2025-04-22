@@ -24,6 +24,7 @@ def get_logger(name: str) -> logging.Logger:
             backupCount=0,
         )
         file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
         logger.setLevel(logging.DEBUG if settings.DEBUG else logging.INFO)
 

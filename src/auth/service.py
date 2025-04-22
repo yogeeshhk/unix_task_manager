@@ -50,7 +50,7 @@ def authenticate_user(db: Session, username: str, password: str) -> Optional[Use
 
 
 def get_current_user(
-        authorization: str = Header(...),
+        authorization: str = Header(..., alias="Authorization"),
         db: Session = Depends(get_db),
 ) -> User:
     try:
